@@ -1,0 +1,95 @@
+CamCam controls and functions
+Last updated 2013_06_26
+
+Interaction controls
+*right mouse button used by default
+drag -- orbits
+SHIFT + drag -- pans
+SPACE + drag -- zoom in/out
+Wheel -- zoom in/out
+1 - top view
+2 - front view
+3 - left view
+4 - right view
+5 - rear view
+6 - bottom view
+
+
+Constructor
+CamCam(PApplet)
+CamCam(PApplet, PVector cam position, PVector cam target)
+
+Using the camera
+void useCamera()
+
+Pause camera - will switch it back to a default view.. good for doing '2d' drawing
+// note: restart with useCamera()
+void pauseCamera()
+
+Zoom stuff
+void setZoomToFitFillPercentage(float new percent) -- sets the zoom filling %.  when zooming to fit, it will try to fill this % of the screen
+void zoomToFit(ArrayList<PVector> points) -- zoom in using the exiting camera normal
+void zoomToFit(ArrayList<PVector> points, PVector targetNormal, float duration) –– will zoom in using a custom normal
+void zoomToFitX(ArrayList<PVector> points, PVector targetNormal, float duration) -- zooms to fill up the width
+void zoomToFitY(ArrayList<PVector> points, PVector targetNormal, float duration) -- zooms to fill up the height
+void zoomToFitWithMinimumDistance(ArrayList<PVector> points, PVector targetNormal, float min distance, float duration) -- limits the amount of zoom if necessary
+void zoomOut() -- will zoom out by the zoomIncrement
+void zoomIn() -- will zoom in by the zoomIncrement until it gets to the minCamDist
+
+Billboarding
+float[] getReverseRotation() -- will return the x, y, and z rotation amounts to billboard something.  note: when transforming manually, do it in the order of z, y, then x
+void makeBillboardTransforms() -- will auto transform the world in order to billboard something
+void makeBillboardTransforms(float spacing) -- same as above, but will move the point 'spacing' distance closer to the camera to try to prevent overlap
+void undoBillboardTransforms() -- essentially pops the matrix so things are back to normal
+
+Changing views [same four functions exist for each view]
+void toTopView() 
+void toTopView(float duration) -- to alter the time it takes to change the view
+void toTopView(ArrayList<PVector> pts) -- automatically does a zoom to fit on these points and the new view
+void toTopView(ArrayList<PVector> pts, float duration) -- combines new duration and zoom to fit
+void toFrontView()
+void toRightView()
+void toLeftView()
+void toRearView()
+void toBottomView()
+void toAxoView() -- a sort of preset angled view
+void toCustomView(float xyTargetIn, float zTargetIn) -- for setting a custom xy and z angled view
+void toCustomView(float xyTargetIn, float zTargetIn, float duration) 
+void toCustomView(ArrayList<PVector> ptsIn, float xyTargetIn, float zTargetIn)
+void toCustomView(ArrayList<PVector> ptsIn, float xyTargetIn, float zTargetIn, float durationIn)
+
+Other view stuff
+void centerCamera(ArrayList<PVector> pts) -- will center the camera target on the points
+void centerCamera(ArrayList<PVector> pts, float duration) -- same but with a specific duration
+
+Camera positions
+PVector getCameraPosition() -- will return the location of the camera
+PVector getCameraTarget() -- will return the location of the camera target
+void setPosition(PVector pos) -- will set a new camera position with the existing target instantly
+void setPosition(PVector pos, PVector target) -- sets position and target instantly
+void setPosition(PVector posIn, PVector targetIn, float duration) -- will move the camera to the new position and target over a certain duration
+
+Calculations
+float getDistanceFromCameraPlane(PVector pointIn) 
+float getDistanceFromTargetPlane(PVector pointIn)
+float distanceFromPointToPlane(PVector normalIn, PVector planePoint, PVector questionPoint) -- in case you want to find the distance from a random point to a random plane defined by a plane point and a point on that plane
+PVector getNormal() -- will return the current PVector normal for the camera
+PVector getTargetNormal() -- will return the target normal if any
+
+Controls/Setting
+void togglePawing() -- will turn on or off mouse controls [on by default]
+void toggleKeyControls() -- will turn on or off the keyboard controls [on by default]
+void useRightMouseForControl() -- will make it so the mouse responds to the right mouse buttons [right by default]
+void useLeftMouseForControl() -- changes to left mouse button
+void setZoomIncrement(float increment) -- changes how much the thing zooms
+float getZoomIncrement() -- returns the zoom increment
+void setCameraTweenTime(float time) -- sets the default camera movement time
+float getCameraTweenTime() -- returns the default camera movement time
+void setMinDistance(float dist) -- sets the minimum distance the camera can be from the target
+float getMinDistance() -- returns the minimum distance the camera can be from the target
+void setZoomTweenTime(float time) -- sets the default camera zoom time -- for when using zoomIn() or zoomOut()
+float getZoomTweenTime() -- returns the default camera zoom time
+
+
+
+
