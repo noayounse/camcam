@@ -10,7 +10,7 @@ float panelDividerLine = 600f; // where the two panels split
 
 
 void setup() {
-  size(800, 400, P3D);
+  size(900, 500, P3D);
 
   SimpleTween.begin(this);
   simpleCam = new CamCam(this, new PVector(-150, 150, 150), new PVector(50, 50, 0));
