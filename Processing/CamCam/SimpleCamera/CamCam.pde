@@ -9,6 +9,11 @@ public class CamCam {
   private PVector initialTarget = new PVector();
   private FSTween leftFrustum, rightFrustum, cameraDist, cameraXYRotation, cameraZRotation;
 
+  private float lastCamX = .0001f;
+  private float lastCamY = 0f;
+  private float lastCameraZRotation = 0f;
+  private int upDirection = 1; 
+
   private PVector cameraTarget = new PVector();
   private PVector cameraLoc = new PVector();
   private PVSTween cameraShift;
@@ -70,8 +75,31 @@ public class CamCam {
   public void useCamera () {
     makeFrustum(leftFrustum.value(), rightFrustum.value(), fovy, cameraZ);
     updateCameraLoc();
-    parent.camera(cameraLoc.x + cameraShift.value().x, cameraLoc.y + cameraShift.value().y, cameraLoc.z + cameraShift.value().z, cameraTarget.x + cameraShift.value().x, cameraTarget.y + cameraShift.value().y, cameraTarget.z + cameraShift.value().z, 0, 0, -1);
-    normal = getNormal();
+
+    float camX = cameraLoc.x + cameraShift.value().x;
+    float camY = cameraLoc.y + cameraShift.value().y;
+    float camZ = cameraLoc.z + cameraShift.value().z;
+
+    if (lastCameraZRotation < (float)(Math.PI / 2f) || lastCameraZRotation > (float)(3 * Math.PI / 2f)) {
+      if (cameraZRotation.value() <= (float)(Math.PI / 2f) || cameraZRotation.value() >= (float)(3 * Math.PI / 2f)) upDirection = -1;
+      else upDirection = 1;
+    }
+    else {
+      if (cameraZRotation.value() < (float)(Math.PI / 2f) || cameraZRotation.value() > (float)(3 * Math.PI / 2f)) upDirection = -1;
+      else upDirection = 1;
+    }
+    if (cameraZRotation.value() != (float)(Math.PI / 2f) && cameraZRotation.value() != (float)(3 * Math.PI / 2f)) {
+      lastCamX = camX;
+      lastCamY = camY;
+      lastCameraZRotation = cameraZRotation.value();
+    }
+    else {
+      camX = lastCamX;
+      camY = lastCamY;
+    }      
+
+    parent.camera(camX, camY, camZ, cameraTarget.x + cameraShift.value().x, cameraTarget.y + cameraShift.value().y, cameraTarget.z + cameraShift.value().z, 0, 0, upDirection);
+    //normal = getNormal();
   } // end useCamera
 
   private void updateCameraLoc() {
@@ -96,8 +124,8 @@ public class CamCam {
     PVector right = upRight.get(1);
     float dx = parent.mouseX - parent.pmouseX;
     float dy = parent.mouseY - parent.pmouseY;
-    dx *= panSensitivity * cameraDist.value();
-    dy *= panSensitivity * cameraDist.value();
+    dx *= panSensitivity * cameraDist.value() * (-upDirection);
+    dy *= panSensitivity * cameraDist.value() * (-upDirection);
     up.normalize();
     up.mult(dy);
     right.normalize();
@@ -136,7 +164,8 @@ public class CamCam {
     if (Math.abs(dy) > 0) {
       dy /= parent.height  / 4;
       float newY = oldY + dy;
-      newY = parent.constrain(newY, (float)(-Math.PI / 2 + .001), (float)(Math.PI / 2 - .001));
+
+      newY = smartMod(newY, (float)(Math.PI * 2));
       //cameraZRotation.setBegin(newY);
       cameraZRotation.setCurrent(newY);
       //println(frameCount + " -- moved Y: " + newY);
@@ -254,10 +283,10 @@ public class CamCam {
   public void undoBillboardTransforms() {
     /*
     float[] reversed = getReverseRotation();
-    rotateX(-reversed[0]);
-    rotateY(-reversed[1]);
-    rotateZ(-reversed[2]);
-    */
+     rotateX(-reversed[0]);
+     rotateY(-reversed[1]);
+     rotateZ(-reversed[2]);
+     */
     popMatrix();
   } // end undoBillboardTransforms
 
@@ -385,7 +414,9 @@ public class CamCam {
   } // end toCustomView
 
   private void startupCameraTween(float cameraXYTarget, float cameraZTarget, ArrayList<PVector> ptsIn, float durationIn) {
-    cameraXYTarget = adjustForNearestXYRotation(cameraXYTarget % (float)(Math.PI * 2));
+    // ********* //
+    cameraXYTarget = adjustForNearestRotation(cameraXYTarget % (float)(Math.PI * 2), cameraXYRotation.value());
+    cameraZTarget = adjustForNearestRotation(cameraZTarget % (float)(Math.PI * 2), cameraZRotation.value());
     cameraXYRotation.playLive(cameraXYTarget, durationIn, 0);
     cameraZRotation.playLive(cameraZTarget, durationIn, 0);
     targetNormal = new PVector((float)(Math.cos(cameraXYTarget) * cameraDist.value() * Math.cos(cameraZTarget)), (float)(Math.sin(cameraXYTarget) * Math.cos(cameraZTarget) * cameraDist.value()), (float)(Math.sin(cameraZTarget) * cameraDist.value()));
@@ -441,10 +472,10 @@ public class CamCam {
     PVector newPos = PVector.add(cameraShift.value(), cameraLoc);
     return newPos;
   } // end getPosition
-  
+
   public PVector getCameraTarget() {
     PVector newPos = PVector.add(cameraShift.value(), cameraTarget);
-    return newPos;    
+    return newPos;
   } // end getCameraTarget  
 
   public void setPosition(PVector posIn) {
@@ -472,7 +503,7 @@ public class CamCam {
       cameraShift.setCurrent(newShift);
     } 
     else {         
-      targetCameraRotationXY = adjustForNearestXYRotation(targetCameraRotationXY);
+      targetCameraRotationXY = adjustForNearestRotation(targetCameraRotationXY, cameraXYRotation.value());
       cameraXYRotation.playLive(targetCameraRotationXY, durationIn, 0);
       cameraZRotation.playLive(targetCameraRotationZ, durationIn, 0);
       cameraDist.playLive(startingCameraDist, durationIn, 0);
@@ -517,10 +548,11 @@ public class CamCam {
     return result;
   } // end smartMod
 
-  public float adjustForNearestXYRotation(float angleIn) {
-    if (cameraXYRotation.value() - angleIn > (float)Math.PI) angleIn = (float)(Math.PI * 2) + angleIn;
+
+  public float adjustForNearestRotation(float angleIn, float currentAngle) {
+    if (currentAngle - angleIn > (float)Math.PI) angleIn = (float)(Math.PI * 2) + angleIn;
     return angleIn;
-  } // end adjustForNearestXYRotation
+  } // end adjustForNearestRotation
 
 
 
@@ -532,7 +564,7 @@ public class CamCam {
       else if (parent.key == '3') toLeftView();
       else if (parent.key == '4') toRightView();
       else if (parent.key == '5') toBottomView();
-       else if (parent.key == '6') toRearView();
+      else if (parent.key == '6') toRearView();
     }
   } // end keyEvent
 
@@ -622,11 +654,11 @@ public class CamCam {
   public float getMinDistance() {
     return minCamDist;
   } // end getMinDistance
-  
+
   public void setZoomTweenTime(float timeIn) {
     defaultManualZoomTime = timeIn;
   } // end setZoomTweenTime
-  
+
   public float getZoomTweenTime() {
     return defaultManualZoomTime;
   } // end getZoomTweenTime
