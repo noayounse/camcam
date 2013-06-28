@@ -170,39 +170,39 @@ public class CamCam {
 
   private void usePawPanning(boolean active, boolean inertiaMovement) {
     if (active) {
-    BoundingBox b = new BoundingBox();
-    ArrayList<PVector> upRight = b.makePlaneVectors(getNormal());
+      BoundingBox b = new BoundingBox();
+      ArrayList<PVector> upRight = b.makePlaneVectors(getNormal());
 
-    PVector up = upRight.get(0);
-    PVector right = upRight.get(1);
-    float dx = parent.mouseX - parent.pmouseX;
-    float dy = parent.mouseY - parent.pmouseY;
+      PVector up = upRight.get(0);
+      PVector right = upRight.get(1);
+      float dx = parent.mouseX - parent.pmouseX;
+      float dy = parent.mouseY - parent.pmouseY;
 
-    PVector result;
+      PVector result;
 
-    shiftInertia.mult((float)(inertiaFriction * .9));
-    if (Math.abs(shiftInertia.x) < .001) shiftInertia.x = 0;
-    if (Math.abs(shiftInertia.y) < .001) shiftInertia.y = 0;
-    if (Math.abs(shiftInertia.z) < .001) shiftInertia.z = 0;
-    if ((dx == 0 && dy == 0) || inertiaMovement) {
-      result = shiftInertia.get();
+      shiftInertia.mult((float)(inertiaFriction * .9));
+      if (Math.abs(shiftInertia.x) < .001) shiftInertia.x = 0;
+      if (Math.abs(shiftInertia.y) < .001) shiftInertia.y = 0;
+      if (Math.abs(shiftInertia.z) < .001) shiftInertia.z = 0;
+      if ((dx == 0 && dy == 0) || inertiaMovement) {
+        result = shiftInertia.get();
+      }
+      else {
+        float multiplier = (float)(1.5 * cameraDist.value() * Math.atan(fovy / 2f));
+        dx *= panSensitivity * (-upDirection) * multiplier / parent.height;
+        dy *= panSensitivity * (-upDirection) * multiplier / parent.height;
+        up.normalize();
+        up.mult(dy);
+        right.normalize();
+        right.mult(dx);
+        result = up.get();
+        result.sub(right);
+      }
+
+      actOnPawPanning(result);
+
+      shiftInertia = result.get();
     }
-    else {
-      float multiplier = (float)(1.5 * cameraDist.value() * Math.atan(fovy / 2f));
-      dx *= panSensitivity * (-upDirection) * multiplier / parent.height;
-      dy *= panSensitivity * (-upDirection) * multiplier / parent.height;
-      up.normalize();
-      up.mult(dy);
-      right.normalize();
-      right.mult(dx);
-      result = up.get();
-      result.sub(right);
-    }
-
-    actOnPawPanning(result);
-    
-    shiftInertia = result.get();
-    } 
   } // end usePawPanning
 
   private void actOnPawPanning(PVector directionIn) {
@@ -512,6 +512,7 @@ public class CamCam {
   } // end toCustomView
 
   private void startupCameraTween(float cameraXYTarget, float cameraZTarget, ArrayList<PVector> ptsIn, float durationIn) {
+    resetInertias();
     cameraXYTarget = adjustForNearestRotation(cameraXYTarget % (float)(Math.PI * 2), cameraXYRotation.value());
     cameraZTarget = adjustForNearestRotation(cameraZTarget % (float)(Math.PI * 2), cameraZRotation.value());
     cameraXYRotation.playLive(cameraXYTarget, durationIn, 0);
@@ -581,7 +582,15 @@ public class CamCam {
   public void setPosition(PVector posIn, PVector targetIn) {
     setPosition(posIn, targetIn, 0);
   }
+  public void setTarget(PVector targetIn){
+    setPosition(getCameraPosition(), targetIn, 0);
+  } // end setTarget
+  public void setTarget(PVector targetIn, float durationIn) {
+    setPosition(getCameraPosition(), targetIn, durationIn);
+  } // end setTarget
   public void setPosition(PVector posIn, PVector targetIn, float durationIn) {
+    resetInertias();
+
     float targetDist = posIn.dist(targetIn);
     targetDist = targetDist < minCamDist ? minCamDist : targetDist;
     PVector diff = PVector.sub(targetIn, posIn);
@@ -601,12 +610,21 @@ public class CamCam {
     } 
     else {         
       targetCameraRotationXY = adjustForNearestRotation(targetCameraRotationXY, cameraXYRotation.value());
+
+
       cameraXYRotation.playLive(targetCameraRotationXY, durationIn, 0);
       cameraZRotation.playLive(targetCameraRotationZ, durationIn, 0);
-      cameraDist.playLive(startingCameraDist, durationIn, 0);
+      cameraDist.playLive(targetDist, durationIn, 0);
       cameraShift.playLive(newShift, durationIn, 0);
     }
   } // end setPosition
+
+  private void resetInertias() {
+    xyRotationInertia = 0f;
+    zRotationInertia = 0f;
+    distInertia = 0f;
+    shiftInertia = new PVector();
+  } // end resetInertias
 
 
 

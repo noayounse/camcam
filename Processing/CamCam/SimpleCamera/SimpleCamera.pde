@@ -215,8 +215,9 @@ void keyReleased() {
     println(simpleCam.getCameraTarget());
   }
   if (key == 'p') simpleCam.setPosition(new PVector(0, 0, 120), new PVector());
-  if (key == 'o') simpleCam.setPosition(new PVector(0, 0, 120), new PVector(0, 0, 0), 120);
+  if (key == 'o') simpleCam.setPosition(new PVector(0, 0, 120), new PVector(220, 0, 0), 120);
   
+  if (key == 't') simpleCam.setTarget(new PVector(100, 100, 100), 100);
   
   if (key == '\'') simpleCam.setZoomTweenTime(20);
   if (key == ';') simpleCam.setZoomTweenTime(200);

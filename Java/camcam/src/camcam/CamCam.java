@@ -76,7 +76,7 @@ public class CamCam {
 
 	// control vars
 	private boolean pawingControlsOn = true;
-	private boolean mouseIsPressed = false;	
+	private boolean mouseIsPressed = false;
 	private boolean keyControlsOn = true;
 	private boolean rightMouseInControl = true;
 	private float panSensitivity = 1f;
@@ -180,163 +180,178 @@ public class CamCam {
 		parent.camera();
 	} // end pauseCamera
 
-	
-    // pawing controls
+	// pawing controls
 
-  private void dealWithPawingAndInertia() {
-    boolean pressedSpace = (parent.keyPressed && parent.key == ' ');
-    boolean pressedShift = (parent.keyPressed && parent.keyCode == parent.SHIFT);
-    boolean pawZoomingActive = false;
-    boolean pawPanningActive = false;
-    boolean pawRotationActive = false;
+	private void dealWithPawingAndInertia() {
+		boolean pressedSpace = (parent.keyPressed && parent.key == ' ');
+		boolean pressedShift = (parent.keyPressed && parent.keyCode == parent.SHIFT);
+		boolean pawZoomingActive = false;
+		boolean pawPanningActive = false;
+		boolean pawRotationActive = false;
 
-    // active
-    if (lastFrame != parent.frameCount) {
-      if ((mouseIsPressed && pressedSpace)) {
-        pawZoomingActive = true;
-        usePawZooming(pawZoomingActive, false);
-      } 
-      else if ((mouseIsPressed && pressedShift)) {
-        pawPanningActive = true;
-        usePawPanning(pawPanningActive, false);
-      } 
-      else if (mouseIsPressed) {
-        pawRotationActive = true;
-        usePawRotation(pawRotationActive, false);
-      }
+		// active
+		if (lastFrame != parent.frameCount) {
+			if ((mouseIsPressed && pressedSpace)) {
+				pawZoomingActive = true;
+				usePawZooming(pawZoomingActive, false);
+			} else if ((mouseIsPressed && pressedShift)) {
+				pawPanningActive = true;
+				usePawPanning(pawPanningActive, false);
+			} else if (mouseIsPressed) {
+				pawRotationActive = true;
+				usePawRotation(pawRotationActive, false);
+			}
 
-      //if (!mouseIsPressed) {
-      if (distInertia != 0) {
-        usePawZooming(!pawZoomingActive, true);
-      } 
-      if (shiftInertia.mag() != 0) {
-        usePawPanning(!pawPanningActive, true);
-      }  
-      if ((zRotationInertia != 0 || xyRotationInertia != 0)) {
-        usePawRotation(!pawRotationActive, true);
-      }
-      //}
-    }
-  } // end dealWithPawing
+			// if (!mouseIsPressed) {
+			if (distInertia != 0) {
+				usePawZooming(!pawZoomingActive, true);
+			}
+			if (shiftInertia.mag() != 0) {
+				usePawPanning(!pawPanningActive, true);
+			}
+			if ((zRotationInertia != 0 || xyRotationInertia != 0)) {
+				usePawRotation(!pawRotationActive, true);
+			}
+			// }
+		}
+	} // end dealWithPawing
 
-  private void usePawPanning(boolean active, boolean inertiaMovement) {
-    if (active) {
-    BoundingBox b = new BoundingBox();
-    ArrayList<PVector> upRight = b.makePlaneVectors(getNormal());
+	private void usePawPanning(boolean active, boolean inertiaMovement) {
+		if (active) {
+			BoundingBox b = new BoundingBox();
+			ArrayList<PVector> upRight = b.makePlaneVectors(getNormal());
 
-    PVector up = upRight.get(0);
-    PVector right = upRight.get(1);
-    float dx = parent.mouseX - parent.pmouseX;
-    float dy = parent.mouseY - parent.pmouseY;
+			PVector up = upRight.get(0);
+			PVector right = upRight.get(1);
+			float dx = parent.mouseX - parent.pmouseX;
+			float dy = parent.mouseY - parent.pmouseY;
 
-    PVector result;
+			PVector result;
 
-    shiftInertia.mult((float)(inertiaFriction * .9));
-    if (Math.abs(shiftInertia.x) < .001) shiftInertia.x = 0;
-    if (Math.abs(shiftInertia.y) < .001) shiftInertia.y = 0;
-    if (Math.abs(shiftInertia.z) < .001) shiftInertia.z = 0;
-    if ((dx == 0 && dy == 0) || inertiaMovement) {
-      result = shiftInertia.get();
-    }
-    else {
-      float multiplier = (float)(1.5 * cameraDist.value() * Math.atan(fovy / 2f));
-      dx *= panSensitivity * (-upDirection) * multiplier / parent.height;
-      dy *= panSensitivity * (-upDirection) * multiplier / parent.height;
-      up.normalize();
-      up.mult(dy);
-      right.normalize();
-      right.mult(dx);
-      result = up.get();
-      result.sub(right);
-    }
+			shiftInertia.mult((float) (inertiaFriction * .9));
+			if (Math.abs(shiftInertia.x) < .001)
+				shiftInertia.x = 0;
+			if (Math.abs(shiftInertia.y) < .001)
+				shiftInertia.y = 0;
+			if (Math.abs(shiftInertia.z) < .001)
+				shiftInertia.z = 0;
+			if ((dx == 0 && dy == 0) || inertiaMovement) {
+				result = shiftInertia.get();
+			} else {
+				float multiplier = (float) (1.5 * cameraDist.value() * Math
+						.atan(fovy / 2f));
+				dx *= panSensitivity * (-upDirection) * multiplier
+						/ parent.height;
+				dy *= panSensitivity * (-upDirection) * multiplier
+						/ parent.height;
+				up.normalize();
+				up.mult(dy);
+				right.normalize();
+				right.mult(dx);
+				result = up.get();
+				result.sub(right);
+			}
 
-    actOnPawPanning(result);
-    
-    shiftInertia = result.get();
-    } 
-  } // end usePawPanning
+			actOnPawPanning(result);
 
-  private void actOnPawPanning(PVector directionIn) {
-    PVector oldCameraShift = cameraShift.value();
-    oldCameraShift.add(directionIn);
-    cameraShift.setCurrent(oldCameraShift);
-  } // end actOnPawPanning
+			shiftInertia = result.get();
+		}
+	} // end usePawPanning
 
-  private void usePawZooming(boolean active, boolean inertiaMovement) {
-    if (active) {
-      float dy = parent.mouseY - parent.pmouseY;
-      dy *= zoomSensitivity;
-      distInertia *= inertiaFriction;
-      if (Math.abs(distInertia) < .001) distInertia = 0;
-      if (dy == 0 || inertiaMovement) dy = distInertia;    
+	private void actOnPawPanning(PVector directionIn) {
+		PVector oldCameraShift = cameraShift.value();
+		oldCameraShift.add(directionIn);
+		cameraShift.setCurrent(oldCameraShift);
+	} // end actOnPawPanning
 
-      actOnPawZooming(dy);
-      distInertia = dy;
-    }
-  } // end usePawZooming
+	private void usePawZooming(boolean active, boolean inertiaMovement) {
+		if (active) {
+			float dy = parent.mouseY - parent.pmouseY;
+			dy *= zoomSensitivity;
+			distInertia *= inertiaFriction;
+			if (Math.abs(distInertia) < .001)
+				distInertia = 0;
+			if (dy == 0 || inertiaMovement)
+				dy = distInertia;
 
-  private void actOnPawZooming(float zoomingIn) {
-    float oldCameraDistance = cameraDist.value();
-    if (oldCameraDistance + zoomingIn > minCamDist) {
-      cameraDist.setCurrent(oldCameraDistance + zoomingIn);
-    }
-  } // end actOnPawZooming
+			actOnPawZooming(dy);
+			distInertia = dy;
+		}
+	} // end usePawZooming
 
-  private void usePawMove() {
-    float dy = -(parent.mouseY - parent.pmouseY);
-    dy *= forwardsSensitivity; 
-    PVector newShift = getNormal().get();
-    newShift.normalize();
-    newShift.mult(dy);
+	private void actOnPawZooming(float zoomingIn) {
+		float oldCameraDistance = cameraDist.value();
+		if (oldCameraDistance + zoomingIn > minCamDist) {
+			cameraDist.setCurrent(oldCameraDistance + zoomingIn);
+		}
+	} // end actOnPawZooming
 
-    actOnPawMove(newShift);
-  } // end usePawMove
+	private void usePawMove() {
+		float dy = -(parent.mouseY - parent.pmouseY);
+		dy *= forwardsSensitivity;
+		PVector newShift = getNormal().get();
+		newShift.normalize();
+		newShift.mult(dy);
 
-  private void actOnPawMove(PVector moveIn) {
-    PVector currentShift = cameraShift.value().get();
-    currentShift.add(moveIn);
-    cameraShift.setCurrent(currentShift);
-  } // end actOnPawMove
+		actOnPawMove(newShift);
+	} // end usePawMove
 
-  private void usePawRotation(boolean active, boolean inertiaMovement) {
-    if (active) {
-      float dx = parent.mouseX - parent.pmouseX;
-      float dy = parent.mouseY - parent.pmouseY;
+	private void actOnPawMove(PVector moveIn) {
+		PVector currentShift = cameraShift.value().get();
+		currentShift.add(moveIn);
+		cameraShift.setCurrent(currentShift);
+	} // end actOnPawMove
 
-      xyRotationInertia *= inertiaFriction;
-      zRotationInertia *= inertiaFriction;
-      if (Math.abs(xyRotationInertia) < .001) xyRotationInertia = 0;
-      if (Math.abs(zRotationInertia) < .001) zRotationInertia = 0;
-      if (dx == 0 || inertiaMovement) dx = xyRotationInertia;
-      if (dy == 0 || inertiaMovement) dy = zRotationInertia;
+	private void usePawRotation(boolean active, boolean inertiaMovement) {
+		if (active) {
+			float dx = parent.mouseX - parent.pmouseX;
+			float dy = parent.mouseY - parent.pmouseY;
 
-      actOnPawRotation(dx, dy);
+			xyRotationInertia *= inertiaFriction;
+			zRotationInertia *= inertiaFriction;
+			if (Math.abs(xyRotationInertia) < .001)
+				xyRotationInertia = 0;
+			if (Math.abs(zRotationInertia) < .001)
+				zRotationInertia = 0;
+			if (dx == 0 || inertiaMovement)
+				dx = xyRotationInertia;
+			if (dy == 0 || inertiaMovement)
+				dy = zRotationInertia;
 
-      xyRotationInertia = dx;
-      zRotationInertia = dy;
-    }
-  } // end usePawRotation
+			actOnPawRotation(dx, dy);
 
-  private void actOnPawRotation(float dxIn, float dyIn) {
-    float oldX = cameraXYRotation.value();
-    float oldY = cameraZRotation.value();
+			xyRotationInertia = dx;
+			zRotationInertia = dy;
+		}
+	} // end usePawRotation
 
-    if (Math.abs(dyIn) > 0) {
-      dyIn /= parent.height  / 4;
-      float newY = oldY + dyIn;
-      newY = smartMod(newY, (float)(Math.PI * 2));
-      cameraZRotation.setCurrent(newY);
-    }
+	private void actOnPawRotation(float dxIn, float dyIn) {
+		float oldX = cameraXYRotation.value();
+		float oldY = cameraZRotation.value();
 
-    if (Math.abs(dxIn) > 0) {
-      dxIn /= parent.width / 4;
-      float newX = oldX + dxIn;
-      newX = smartMod(newX, (float)(Math.PI * 2));
-      cameraXYRotation.setCurrent(newX);
-    }
-  } // end actOnPawRotation
+		if (Math.abs(dyIn) > 0) {
+			dyIn /= parent.height / 4;
+			float newY = oldY + dyIn;
+			newY = smartMod(newY, (float) (Math.PI * 2));
+			cameraZRotation.setCurrent(newY);
+		}
+
+		if (Math.abs(dxIn) > 0) {
+			dxIn /= parent.width / 4;
+			float newX = oldX + dxIn;
+			newX = smartMod(newX, (float) (Math.PI * 2));
+			cameraXYRotation.setCurrent(newX);
+		}
+	} // end actOnPawRotation
 
 	// zooming things
+
+	private void resetInertias() {
+		xyRotationInertia = 0f;
+		zRotationInertia = 0f;
+		distInertia = 0f;
+		shiftInertia = new PVector();
+	} // end resetInertias
 
 	public void setZoomToFitFillPercentage(float percentIn) {
 		zoomToFitFill = percentIn;
@@ -602,6 +617,7 @@ public class CamCam {
 
 	private void startupCameraTween(float cameraXYTarget, float cameraZTarget,
 			ArrayList<PVector> ptsIn, float durationIn) {
+		resetInertias();
 		cameraXYTarget = adjustForNearestRotation(cameraXYTarget
 				% (float) (Math.PI * 2), cameraXYRotation.value());
 		cameraZTarget = adjustForNearestRotation(cameraZTarget
@@ -684,7 +700,17 @@ public class CamCam {
 		setPosition(posIn, targetIn, 0);
 	}
 
+	public void setTarget(PVector targetIn) {
+		setPosition(getCameraPosition(), targetIn, 0);
+	} // end setTarget
+
+	public void setTarget(PVector targetIn, float durationIn) {
+		setPosition(getCameraPosition(), targetIn, durationIn);
+	} // end setTarget
+
 	public void setPosition(PVector posIn, PVector targetIn, float durationIn) {
+		resetInertias();
+
 		float targetDist = posIn.dist(targetIn);
 		targetDist = targetDist < minCamDist ? minCamDist : targetDist;
 		PVector diff = PVector.sub(targetIn, posIn);
@@ -709,7 +735,7 @@ public class CamCam {
 					targetCameraRotationXY, cameraXYRotation.value());
 			cameraXYRotation.playLive(targetCameraRotationXY, durationIn, 0);
 			cameraZRotation.playLive(targetCameraRotationZ, durationIn, 0);
-			cameraDist.playLive(startingCameraDist, durationIn, 0);
+			cameraDist.playLive(targetDist, durationIn, 0);
 			cameraShift.playLive(newShift, durationIn, 0);
 		}
 	} // end setPosition
