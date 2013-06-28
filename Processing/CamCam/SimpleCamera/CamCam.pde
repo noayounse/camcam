@@ -582,7 +582,7 @@ public class CamCam {
   public void setPosition(PVector posIn, PVector targetIn) {
     setPosition(posIn, targetIn, 0);
   }
-  public void setTarget(PVector targetIn){
+  public void setTarget(PVector targetIn) {
     setPosition(getCameraPosition(), targetIn, 0);
   } // end setTarget
   public void setTarget(PVector targetIn, float durationIn) {
@@ -600,6 +600,10 @@ public class CamCam {
     float xyDist = (float)Math.sqrt(diff.x * diff.x + diff.y * diff.y);
     float targetCameraRotationZ = -(float)(Math.atan(diff.z / .0001));
     if (xyDist != 0) targetCameraRotationZ = -(float)Math.atan(diff.z / xyDist);
+
+    if (cameraXYRotation != null) targetCameraRotationXY = adjustForNearestRotation(targetCameraRotationXY % (float)(Math.PI * 2), cameraXYRotation.value());
+    if (cameraZRotation != null) targetCameraRotationZ = adjustForNearestRotation(targetCameraRotationZ % (float)(Math.PI * 2), cameraZRotation.value());    
+
     PVector newShift = targetIn.get();
     if (durationIn <= 0) {
       startingCameraRotationXY = targetCameraRotationXY;

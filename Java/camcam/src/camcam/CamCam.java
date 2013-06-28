@@ -723,6 +723,10 @@ public class CamCam {
 		float targetCameraRotationZ = -(float) (Math.atan(diff.z / .0001));
 		if (xyDist != 0)
 			targetCameraRotationZ = -(float) Math.atan(diff.z / xyDist);
+		
+	    if (cameraXYRotation != null) targetCameraRotationXY = adjustForNearestRotation(targetCameraRotationXY % (float)(Math.PI * 2), cameraXYRotation.value());
+	    if (cameraZRotation != null) targetCameraRotationZ = adjustForNearestRotation(targetCameraRotationZ % (float)(Math.PI * 2), cameraZRotation.value());  		
+		
 		PVector newShift = targetIn.get();
 		if (durationIn <= 0) {
 			startingCameraRotationXY = targetCameraRotationXY;
