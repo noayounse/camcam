@@ -77,7 +77,15 @@ PVector getNormal() -- will return the current PVector normal for the camera
 PVector getTargetNormal() -- will return the target normal if any
 
 Controls/Setting
+void setTimeToSeconds() -- will turn tween times to seconds
+void setTimeToFrames() -- will turn tween times to frames
 void togglePawing() -- will turn on or off mouse controls [on by default]
+void disableOrbit() -- turns off manual orbit
+void enableOrbit();
+void disableZooming() -- turns off manual zooming
+void enableZooming()
+void disablePanning() -- turns off manual panning
+void enablePanning()
 void toggleKeyControls() -- will turn on or off the keyboard controls [on by default]
 void useRightMouseForControl() -- will make it so the mouse responds to the right mouse buttons [right by default]
 void useLeftMouseForControl() -- changes to left mouse button
@@ -87,6 +95,7 @@ void setCameraTweenTime(float time) -- sets the default camera movement time
 float getCameraTweenTime() -- returns the default camera movement time
 void setMinDistance(float dist) -- sets the minimum distance the camera can be from the target
 float getMinDistance() -- returns the minimum distance the camera can be from the target
+float getDistance() –– returns the distance between the camera position & target
 void setZoomTweenTime(float time) -- sets the default camera zoom time -- for when using zoomIn() or zoomOut()
 float getZoomTweenTime() -- returns the default camera zoom time
 
