@@ -14,7 +14,7 @@ void setup() {
 
   SimpleTween.begin(this);
   simpleCam = new CamCam(this, new PVector(-150, 150, 150), new PVector(50, 50, 0));
-  simpleCam.useLeftMouseForControl();
+  //simpleCam.useLeftMouseForControl();
   randomSeed(1);
 
   samples = new ArrayList<Dot>();
@@ -35,7 +35,11 @@ void draw() {
   box(55);
 
 
-  for (Dot d : samples) d.display();
+  for (Dot d : samples) {
+    stroke(255, 0, 0);
+    if (simpleCam.pointInView(d.pos.value())) stroke(255);
+    d.display();
+  }
 
 
   // temp draw a bouding box around the points
@@ -213,6 +217,7 @@ void keyReleased() {
     println("actual loc / target: ");
     println(simpleCam.getCameraPosition());
     println(simpleCam.getCameraTarget());
+    println("checking pt in view for pt (0, 0, 0): " + simpleCam.pointInView(new PVector()));
   }
   if (key == 'p') simpleCam.setPosition(new PVector(0, 0, 120), new PVector());
   if (key == 'o') simpleCam.setPosition(new PVector(400, 0, 0), new PVector(0, 0, 0), 120);

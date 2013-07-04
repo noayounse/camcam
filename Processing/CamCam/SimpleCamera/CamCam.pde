@@ -28,8 +28,8 @@ public class CamCam {
   private float cameraTweenTime = cameraTweenTimeFrames;  
   private float zoomIncrement = 150f;
   private float zoomToFitFill = .9; // % of screen
-private float defaultZoomtimeFrames = 90;
-private float defaultZoomtimeSeconds = 1.5;
+  private float defaultZoomtimeFrames = 90;
+  private float defaultZoomtimeSeconds = 1.5;
   private float defaultZoomTime = defaultZoomtimeFrames;
   private float defaultManualZoomTime = defaultZoomtimeFrames / 2;
   private float minCamDist = 10f;
@@ -98,7 +98,7 @@ private float defaultZoomtimeSeconds = 1.5;
     defaultZoomTime = defaultZoomtimeSeconds;
     defaultManualZoomTime = defaultZoomtimeSeconds / 2;
   } // end setTimeToSeconds
-  
+
   public void setTimeToFrames() {
     cameraShift.setTimeToFrames();
     cameraXYRotation.setTimeToFrames();
@@ -109,11 +109,11 @@ private float defaultZoomtimeSeconds = 1.5;
     rightFrustum.setTimeToFrames();  
     cameraTweenTime = cameraTweenTimeFrames;
     defaultZoomTime = defaultZoomtimeFrames;
-    defaultManualZoomTime = defaultZoomtimeFrames / 2;    
+    defaultManualZoomTime = defaultZoomtimeFrames / 2;
   } // end setTimeToFrames
 
 
-    public void useCamera () {
+  public void useCamera () {
 
     makeFrustum(leftFrustum.value(), rightFrustum.value(), fovy, cameraZ);
     // deal with inertia
@@ -723,7 +723,18 @@ private float defaultZoomtimeSeconds = 1.5;
 
 
 
-    // keyPress stuff
+
+
+    public boolean pointInView(PVector ptIn) {
+    PVector in2dSpace = new PVector(parent.screenX(ptIn.x, ptIn.y, ptIn.z), parent.screenY(ptIn.x, ptIn.y, ptIn.z));
+    if (in2dSpace.x >= leftFrustum.value() && in2dSpace.x <= rightFrustum.value() && in2dSpace.y >= 0 && in2dSpace.y <= parent.height) return true;
+    return false;
+  } // end pointInView
+
+
+
+
+  // keyPress stuff
   public void keyEvent(KeyEvent event) {
     if (keyControlsOn && event.getAction() == KeyEvent.RELEASE) {
       if (parent.key == '1') toTopView();

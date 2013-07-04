@@ -59,7 +59,7 @@ public class CamCam {
 	private PVector cameraTarget = new PVector();
 	private PVector cameraLoc = new PVector();
 	private PVSTween cameraShift;
-	
+
 	private float cameraTweenTimeSeconds = 1.5f;
 	private float cameraTweenTimeFrames = 140f;
 	private float cameraTweenTime = cameraTweenTimeFrames;
@@ -67,8 +67,8 @@ public class CamCam {
 	private float zoomToFitFill = .9f; // % of screen
 	private float defaultZoomtimeFrames = 90f;
 	private float defaultZoomtimeSeconds = 1.5f;
-	  private float defaultZoomTime = defaultZoomtimeFrames;
-	  private float defaultManualZoomTime = defaultZoomtimeFrames / 2;
+	private float defaultZoomTime = defaultZoomtimeFrames;
+	private float defaultManualZoomTime = defaultZoomtimeFrames / 2;
 	private float minCamDist = 10f;
 
 	private float fovy = (float) (Math.PI * (60f) / 180f); // frame of view for
@@ -128,7 +128,7 @@ public class CamCam {
 		rightFrustum.setModeQuadBoth();
 		updateCameraLoc();
 	} // end setupTweens
-	
+
 	public void setTimeToSeconds() {
 		cameraShift.setTimeToSeconds();
 		cameraXYRotation.setTimeToSeconds();
@@ -141,7 +141,7 @@ public class CamCam {
 		defaultZoomTime = defaultZoomtimeSeconds;
 		defaultManualZoomTime = defaultZoomtimeSeconds / 2;
 	} // end setTimeToSeconds
-	
+
 	public void setTimeToFrames() {
 		cameraShift.setTimeToFrames();
 		cameraXYRotation.setTimeToFrames();
@@ -149,10 +149,10 @@ public class CamCam {
 		cameraZRotation.setTimeToFrames();
 		cameraDist.setTimeToFrames();
 		leftFrustum.setTimeToFrames();
-		rightFrustum.setTimeToFrames();	
+		rightFrustum.setTimeToFrames();
 		cameraTweenTime = cameraTweenTimeFrames;
 		defaultZoomTime = defaultZoomtimeFrames;
-		defaultManualZoomTime = defaultZoomtimeFrames / 2;		
+		defaultManualZoomTime = defaultZoomtimeFrames / 2;
 	} // end setTimeToFrames
 
 	public void useCamera() {
@@ -214,16 +214,15 @@ public class CamCam {
 		parent.camera();
 	} // end pauseCamera
 
-	
 	public void pauseCameraMovement() {
-		   cameraShift.pause();
-		    cameraXYRotation.pause();
-		    cameraZRotation.pause();
-		    cameraDist.pause();
-		    leftFrustum.pause();		    
-		    rightFrustum.pause();
+		cameraShift.pause();
+		cameraXYRotation.pause();
+		cameraZRotation.pause();
+		cameraDist.pause();
+		leftFrustum.pause();
+		rightFrustum.pause();
 	} // endpauseCameraMovement
-	
+
 	// pawing controls
 
 	private void dealWithPawingAndInertia() {
@@ -739,7 +738,7 @@ public class CamCam {
 	public float getDistance() {
 		return cameraLoc.dist(cameraTarget);
 	} // end getDistance
-	
+
 	public void setPosition(PVector posIn) {
 		setPosition(posIn, cameraTarget.get(), 0);
 	} // end setPosition
@@ -843,6 +842,16 @@ public class CamCam {
 			angleIn = (float) (Math.PI * 2) + angleIn;
 		return angleIn;
 	} // end adjustForNearestRotation
+
+	public boolean pointInView(PVector ptIn) {
+		PVector in2dSpace = new PVector(parent.screenX(ptIn.x, ptIn.y, ptIn.z),
+				parent.screenY(ptIn.x, ptIn.y, ptIn.z));
+		if (in2dSpace.x >= leftFrustum.value()
+				&& in2dSpace.x <= rightFrustum.value() && in2dSpace.y >= 0
+				&& in2dSpace.y <= parent.height)
+			return true;
+		return false;
+	} // end pointInView
 
 	// key event
 	public void keyEvent(KeyEvent event) {

@@ -10,7 +10,6 @@ class Dot {
     pushMatrix();
     translate(pos.value().x, pos.value().y, pos.value().z);
     rotate(rot.value());
-    stroke(255);
     noFill();
     box(5);
     popMatrix();
