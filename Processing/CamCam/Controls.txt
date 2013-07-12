@@ -36,6 +36,9 @@ void zoomToFitWithMinimumDistance(ArrayList<PVector> points, PVector targetNorma
 void zoomOut() -- will zoom out by the zoomIncrement
 void zoomIn() -- will zoom in by the zoomIncrement until it gets to the minCamDist
 
+Frustum
+void shiftFrustum(float left, float right, float duration) –– will shift the frustum to the middle of the left and right
+
 Billboarding
 float[] getReverseRotation() -- will return the x, y, and z rotation amounts to billboard something.  note: when transforming manually, do it in the order of z, y, then x
 void makeBillboardTransforms() -- will auto transform the world in order to billboard something
@@ -75,10 +78,23 @@ float getDistanceFromTargetPlane(PVector pointIn)
 float distanceFromPointToPlane(PVector normalIn, PVector planePoint, PVector questionPoint) -- in case you want to find the distance from a random point to a random plane defined by a plane point and a point on that plane
 PVector getNormal() -- will return the current PVector normal for the camera
 PVector getTargetNormal() -- will return the target normal if any
+boolean pointInView() –– will say whether or not a point is in view of the screen
 
 Controls/Setting
 void setTimeToSeconds() -- will turn tween times to seconds
 void setTimeToFrames() -- will turn tween times to frames
+public void setTimeMode(int modeIn) –– uses constants from tween library
+int getTimeMode –– returns the current time mode
+void setControlSchemaA –– will set the controls to the default. click:orbit, shift+click:pan, space+click:zoom
+void setControlSchemaB –– will set the controls to. click:pan, shift+click:orbit, space+click:zoom
+void setModeLinear() –– turns tweens to linear
+void setModeCubicBoth() 
+void setModeCubicIn()
+void setModeCubicOut() 
+void setModeQuadBoth()
+void setModeQuarticBoth()
+void setModeQuintIn()
+public void setMode(int modeIn) –– manually set a mode – used constants from tween library
 void togglePawing() -- will turn on or off mouse controls [on by default]
 void disableOrbit() -- turns off manual orbit
 void enableOrbit();

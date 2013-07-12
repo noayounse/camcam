@@ -14,7 +14,10 @@ void setup() {
 
   SimpleTween.begin(this);
   simpleCam = new CamCam(this, new PVector(-150, 150, 150), new PVector(50, 50, 0));
-  //simpleCam.useLeftMouseForControl();
+  simpleCam.useLeftMouseForControl();
+  //simpleCam.setTimeToSeconds();
+  //simpleCam.setModeLinear();
+  simpleCam.setControlSchemaB();
   randomSeed(1);
 
   samples = new ArrayList<Dot>();
@@ -26,14 +29,11 @@ void setup() {
 
 
 void draw() {
-
-
   simpleCam.useCamera();
   background(0);
   stroke(125, 0, 255);
   fill(100);
   box(55);
-
 
   for (Dot d : samples) {
     stroke(255, 0, 0);
@@ -187,15 +187,15 @@ void keyReleased() {
   } 
   if (key == '=') {
     println("going to right frustum");
-    simpleCam.startFrustumTweens(panelDividerLine, width, 50);
+    simpleCam.shiftFrustum(panelDividerLine, width, 50);
   } 
   if (key == '0') {
     println("going to left frustum");
-    simpleCam.startFrustumTweens(0, panelDividerLine, 50);
+    simpleCam.shiftFrustum(0, panelDividerLine, 50);
   }
   if (keyCode == '-') {
     println("going to center frustum");
-    simpleCam.startFrustumTweens(0, width, 50);
+    simpleCam.shiftFrustum(0, width, 50);
   }
 
   if (key == 'c') {

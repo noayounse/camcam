@@ -1,6 +1,8 @@
 public class CamCam {
   public PApplet parent;
 
+  private STween base;
+
   // camera stuff
   private float startingCameraDist = 500f;
   private float startingCameraRotationXY = 0f;
@@ -53,6 +55,12 @@ public class CamCam {
   private float zoomSensitivity = 1f;
   private float forwardsSensitivity = 1f;
 
+  // ********* //
+  private final int CONTROL_SCHEMA_A = 0;
+  private final int CONTROL_SCHEMA_B = 1;
+  private int currentControlSchema = CONTROL_SCHEMA_A;
+
+
   private int lastFrame = 0;
 
   public CamCam (PApplet parent_) {
@@ -73,8 +81,14 @@ public class CamCam {
     parent.registerMethod("keyEvent", this);
   } 
 
+
+
   private void setupTweens () {
     SimpleTween.begin(parent);
+
+    base = new STween(13, 0, 0, 1);
+    base.setTimeMode(SimpleTween.baseTimeMode);
+
     cameraShift = new PVSTween(1, 0, initialTarget, initialTarget);
     cameraXYRotation = new FSTween(cameraTweenTime, 0, startingCameraRotationXY, startingCameraRotationXY);
     cameraZRotation = new FSTween(cameraTweenTime, 0, startingCameraRotationZ, startingCameraRotationZ);
@@ -86,34 +100,98 @@ public class CamCam {
     updateCameraLoc();
   } // end setupTweens
 
-  public void setTimeToSeconds() {
-    cameraShift.setTimeToSeconds();
-    cameraXYRotation.setTimeToSeconds();
-    cameraXYRotation.setTimeToSeconds();
-    cameraZRotation.setTimeToSeconds();
-    cameraDist.setTimeToSeconds();
-    leftFrustum.setTimeToSeconds();
-    rightFrustum.setTimeToSeconds();
-    cameraTweenTime = cameraTweenTimeSeconds;
-    defaultZoomTime = defaultZoomtimeSeconds;
-    defaultManualZoomTime = defaultZoomtimeSeconds / 2;
-  } // end setTimeToSeconds
+  public void setModeLinear() {
+    base.setModeLinear();
+    setMode();
+  } // end setModeLinear
 
-  public void setTimeToFrames() {
-    cameraShift.setTimeToFrames();
-    cameraXYRotation.setTimeToFrames();
-    cameraXYRotation.setTimeToFrames();
-    cameraZRotation.setTimeToFrames();
-    cameraDist.setTimeToFrames();
-    leftFrustum.setTimeToFrames();
-    rightFrustum.setTimeToFrames();  
+  public void setModeCubicBoth() {
+    base.setModeCubicBoth();
+    setMode();
+  } // end setModeCubic
+
+  public void setModeCubicIn() {
+    base.setModeCubicIn();
+    setMode();
+  } // end setModeCubicIn()
+
+  public void setModeCubicOut() {
+    base.setModeCubicOut();
+    setMode();
+  } // end setModeCubicOut()
+
+  public void setModeQuadBoth() {
+    base.setModeQuadBoth();
+    setMode();
+  } // end setModeQuadBot
+
+  public void setModeQuarticBoth() {
+    base.setModeQuarticBoth();
+    setMode();
+  } // end setModeQuarticBoth
+
+  public void setModeQuintIn() {
+    base.setModeQuintIn();
+    setMode();
+  } // end setModeQuintIn
+
+  public void setMode() {
+    setMode(base.mode);
+  } // end setMode
+
+    public void setMode(int modeIn) {
+    base.setMode(modeIn);
+    cameraShift.setMode(base.mode);
+    cameraXYRotation.setMode(base.mode);
+    cameraXYRotation.setMode(base.mode);
+    cameraZRotation.setMode(base.mode);
+    cameraDist.setMode(base.mode);
+    leftFrustum.setMode(base.mode);
+    rightFrustum.setMode(base.mode);
+  } // end setMode
+
+    public void setTimeToFrames() {
     cameraTweenTime = cameraTweenTimeFrames;
     defaultZoomTime = defaultZoomtimeFrames;
-    defaultManualZoomTime = defaultZoomtimeFrames / 2;
+    defaultManualZoomTime = defaultZoomtimeFrames / 2;    
+    setTimeMode(SimpleTween.FRAMES_MODE);
   } // end setTimeToFrames
 
+  public void setTimeToSeconds() {
+    cameraTweenTime = cameraTweenTimeSeconds;
+    defaultZoomTime = defaultZoomtimeSeconds;
+    defaultManualZoomTime = defaultZoomtimeSeconds / 2;    
+    setTimeMode(SimpleTween.SECONDS_MODE);
+  } // end setTimeToSeconds
 
-  public void useCamera () {
+  public void setTimeMode(int modeIn) {
+    cameraShift.setTimeMode(modeIn);
+    cameraXYRotation.setTimeMode(modeIn);
+    cameraXYRotation.setTimeMode(modeIn);
+    cameraZRotation.setTimeMode(modeIn);
+    cameraDist.setTimeMode(modeIn);
+    leftFrustum.setTimeMode(modeIn);
+    rightFrustum.setTimeMode(modeIn);
+    base.setTimeMode(modeIn);
+  } // end setTimeMode
+
+  public int getTimeMode() {
+    return base.getTimeMode();
+  } // end getTimeMode
+
+
+    public void setControlSchemaA () {
+    currentControlSchema = CONTROL_SCHEMA_A;
+  } // end setControlSchemaA
+  public void setControlSchemaB () {
+    currentControlSchema = CONTROL_SCHEMA_B;
+  } // end setControlSchemaB
+  public int getCurrentControlSchema() {
+    return currentControlSchema;
+  } // end getCurrentControlSchema
+
+
+    public void useCamera () {
 
     makeFrustum(leftFrustum.value(), rightFrustum.value(), fovy, cameraZ);
     // deal with inertia
@@ -183,20 +261,37 @@ public class CamCam {
 
     // active
     if (lastFrame != parent.frameCount) {
-      if ((mouseIsPressed && pressedSpace && !disablePawingZooming)) {
-        pawZoomingActive = true;
-        usePawZooming(pawZoomingActive, false);
-      } 
-      else if ((mouseIsPressed && pressedShift && !disablePawingPanning)) {
-        pawPanningActive = true;
-        usePawPanning(pawPanningActive, false);
-      } 
-      else if (mouseIsPressed && !disablePawingOrbit) {
-        pawRotationActive = true;
-        usePawRotation(pawRotationActive, false);
-      }
+      switch (currentControlSchema) {
+      case CONTROL_SCHEMA_A:
+        if ((mouseIsPressed && pressedSpace && !disablePawingZooming)) {
+          pawZoomingActive = true;
+          usePawZooming(pawZoomingActive, false);
+        } 
+        else if ((mouseIsPressed && pressedShift && !disablePawingPanning)) {
+          pawPanningActive = true;
+          usePawPanning(pawPanningActive, false);
+        } 
+        else if (mouseIsPressed && !disablePawingOrbit) {
+          pawRotationActive = true;
+          usePawRotation(pawRotationActive, false);
+        }
+        break;
+      case CONTROL_SCHEMA_B: 
+        if ((mouseIsPressed && pressedSpace && !disablePawingZooming)) {
+          pawZoomingActive = true;
+          usePawZooming(pawZoomingActive, false);
+        } 
+        else if (mouseIsPressed && pressedShift && !disablePawingOrbit) {
+          pawRotationActive = true;
+          usePawRotation(pawRotationActive, false);
+        }        
+        else if ((mouseIsPressed && !disablePawingPanning)) {
+          pawPanningActive = true;
+          usePawPanning(pawPanningActive, false);
+        } 
+        break;
+      } // end switch 
 
-      //if (!mouseIsPressed) {
       if (distInertia != 0) {
         usePawZooming(!pawZoomingActive, true);
       } 
@@ -206,7 +301,6 @@ public class CamCam {
       if ((zRotationInertia != 0 || xyRotationInertia != 0)) {
         usePawRotation(!pawRotationActive, true);
       }
-      //}
     }
   } // end dealWithPawing
 
@@ -571,11 +665,11 @@ public class CamCam {
 
 
     // frustum fun
-
-    void startFrustumTweens(float leftIn, float rightIn, float durationIn) {
+  public void shiftFrustum(float leftIn, float rightIn, 
+  float durationIn) {
     leftFrustum.playLive(leftIn, durationIn, 0);
     rightFrustum.playLive(rightIn, durationIn, 0);
-  } // end startFrustumTweens
+  } // end shiftFrustum
 
   // leftIn - the left side of the frame
   // rightIn - the right side of the frame
@@ -662,7 +756,6 @@ public class CamCam {
     } 
     else {         
       targetCameraRotationXY = adjustForNearestRotation(targetCameraRotationXY, cameraXYRotation.value());
-
 
       cameraXYRotation.playLive(targetCameraRotationXY, durationIn, 0);
       cameraZRotation.playLive(targetCameraRotationZ, durationIn, 0);
