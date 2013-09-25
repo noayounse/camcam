@@ -1,4 +1,6 @@
 import simpleTween.*;
+// ***** //
+import java.awt.geom.*;
 
 
 CamCam simpleCam;
@@ -9,8 +11,10 @@ ArrayList<Dot> samples;
 float panelDividerLine = 600f; // where the two panels split
 
 
+int lastFrame = 0;
+
 void setup() {
-  size(900, 500, P3D);
+  size(900, 450, P3D);
 
   SimpleTween.begin(this);
   simpleCam = new CamCam(this, new PVector(-150, 150, 150), new PVector(50, 50, 0));
@@ -18,6 +22,8 @@ void setup() {
   //simpleCam.setTimeToSeconds();
   //simpleCam.setModeLinear();
   simpleCam.setControlSchemaB();
+  simpleCam.makeScreenLines(50, width - 50, 50, height - 50);
+  //simpleCam.setRestrictPanningZ();
   randomSeed(1);
 
   samples = new ArrayList<Dot>();
@@ -89,8 +95,27 @@ void draw() {
   translate(30, 30, 30);
   box(10);
   popMatrix();
-  
+
   drawAxis();
+
+  // manual shift?
+  /*
+  PVector manualShift = new PVector(mouseX - pmouseX, mouseY - pmouseY);
+  if ((abs(manualShift.x) > 0 || abs(manualShift.y) > 0) && !mousePressed) {
+    if (frameCount - lastFrame < 10) {
+      PVector adjustedShift = manualShift.get();
+      float dist = simpleCam.getDistance();
+      float multiplier = constrain(map(dist, 50, 2000, .01, 2), .01, 1000);
+      adjustedShift.mult(multiplier);
+      simpleCam.addManualOffset(adjustedShift);
+    } 
+    lastFrame = frameCount;
+  }
+  simpleCam.pauseCamera();
+  fill(255);
+  text("manualShift: " + simpleCam.manualShift.value().x + ", " + simpleCam.manualShift.value().y + ", " + simpleCam.manualShift.value().z, width/2, 20);
+  text("cameraShift: " + simpleCam.cameraShift.value().x + ", " + simpleCam.cameraShift.value().y + ", " + simpleCam.cameraShift.value().z, width/2, 40);
+  */
 } // end draw
 
 void drawAxis() {
@@ -124,41 +149,41 @@ void keyReleased() {
     simpleCam.useLeftMouseForControl();
   }  
 
-/*
+  /*
   if (key == '1') {
-    //simpleCam.toTopView();
-    simpleCam.toTopView(makeSamplePoints(samples));
-  }
-  if (key == 'q') {
-    simpleCam.toTopView(25);
-  } 
-  if (key == '2') {
-    //simpleCam.toFrontView();
-    simpleCam.toFrontView(makeSamplePoints(samples));
-  }
-  if (key == 'w') {
-    simpleCam.toFrontView(200);
-  } 
-  if (key == '3') {
-    //simpleCam.toRightView();
-    simpleCam.toRightView(makeSamplePoints(samples));
-  } 
-  if (key == 'e') {
-    simpleCam.toRightView(400);
-  } 
-  if (key == '4') {
-    //simpleCam.toLeftView();
-    simpleCam.toLeftView(makeSamplePoints(samples));
-  } 
-  if (key == '5') {
-    //simpleCam.toBottomView();
-    simpleCam.toBottomView(makeSamplePoints(samples));
-  } 
-  if (key == '6') {
-    //simpleCam.toAxoView();
-    simpleCam.toAxoView(makeSamplePoints(samples));
-  }
-  */
+   //simpleCam.toTopView();
+   simpleCam.toTopView(makeSamplePoints(samples));
+   }
+   if (key == 'q') {
+   simpleCam.toTopView(25);
+   } 
+   if (key == '2') {
+   //simpleCam.toFrontView();
+   simpleCam.toFrontView(makeSamplePoints(samples));
+   }
+   if (key == 'w') {
+   simpleCam.toFrontView(200);
+   } 
+   if (key == '3') {
+   //simpleCam.toRightView();
+   simpleCam.toRightView(makeSamplePoints(samples));
+   } 
+   if (key == 'e') {
+   simpleCam.toRightView(400);
+   } 
+   if (key == '4') {
+   //simpleCam.toLeftView();
+   simpleCam.toLeftView(makeSamplePoints(samples));
+   } 
+   if (key == '5') {
+   //simpleCam.toBottomView();
+   simpleCam.toBottomView(makeSamplePoints(samples));
+   } 
+   if (key == '6') {
+   //simpleCam.toAxoView();
+   simpleCam.toAxoView(makeSamplePoints(samples));
+   }
+   */
 
   if (key == 'z') {
     //simpleCam.zoomToFit(makeSamplePoints(samples), simpleCam.getNormal(), 100);
@@ -219,12 +244,13 @@ void keyReleased() {
     println(simpleCam.getCameraTarget());
     println("checking pt in view for pt (0, 0, 0): " + simpleCam.pointInView(new PVector()));
   }
-  if (key == 'p') simpleCam.setPosition(new PVector(0, 0, 120), new PVector());
-  if (key == 'o') simpleCam.setPosition(new PVector(400, 0, 0), new PVector(0, 0, 0), 120);
-  
+  //if (key == 'p') simpleCam.setView(new PVector(0, 0, 120), new PVector());
+  if (key == 'p') simpleCam.setView(new PVector(40, -100, 300), new PVector(40, -99, 50), 420);
+  if (key == 'o') simpleCam.setView(new PVector(100, -1, 400), new PVector(100, 0, 0), 420);
+
   if (key == 't') simpleCam.setTarget(new PVector(100, 100, 100), 100);
-  
-  if (key == '\'') simpleCam.setZoomTweenTime(20);
-  if (key == ';') simpleCam.setZoomTweenTime(200);
+
+  if (key == '\'') simpleCam.setDistance(1000);
+  if (key == ';') simpleCam.setDistance(1000, 100);
 } // end keyReleased
 

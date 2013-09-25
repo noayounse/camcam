@@ -1,5 +1,5 @@
 CamCam controls and functions
-Last updated 2013_06_26
+Last updated 2013_08_08
 
 Interaction controls
 *right mouse button used by default
@@ -38,6 +38,13 @@ void zoomIn() -- will zoom in by the zoomIncrement until it gets to the minCamDi
 
 Frustum
 void shiftFrustum(float left, float right, float duration) –– will shift the frustum to the middle of the left and right
+float getLeftFrustum() –– will return the end value for the left frustum
+float getRightFrustum() –– will return the end value for the left frustum
+
+
+Setting screen lines
+void makeScreenLines(float leftIn, float rightIn, float topIn, float bottomIn) –– will setup the screen lines
+Line2D[] getScreenLines() –– will return the screen lines
 
 Billboarding
 float[] getReverseRotation() -- will return the x, y, and z rotation amounts to billboard something.  note: when transforming manually, do it in the order of z, y, then x
@@ -68,9 +75,13 @@ void centerCamera(ArrayList<PVector> pts, float duration) -- same but with a spe
 Camera positions
 PVector getCameraPosition() -- will return the location of the camera
 PVector getCameraTarget() -- will return the location of the camera target
-void setPosition(PVector pos) -- will set a new camera position with the existing target instantly
-void setPosition(PVector pos, PVector target) -- sets position and target instantly
-void setPosition(PVector posIn, PVector targetIn, float duration) -- will move the camera to the new position and target over a certain duration
+void setView(PVector pos) -- will set a new camera position with the existing target instantly
+void setView(PVector pos, PVector target) -- sets position and target instantly
+void setView(PVector posIn, PVector targetIn, float duration) -- will move the camera to the new position and target over a certain duration
+void setDistance(float distIn) –– sets the distance from the target
+void setDistance(float distIn, float duration) –– same but will animate
+
+void addManualOffset(PVector adjustedShift) -- will add a manual shift if desired.  This shift gets zeroed next time a playLive is called in set Position
 
 Calculations
 float getDistanceFromCameraPlane(PVector pointIn) 
@@ -78,7 +89,12 @@ float getDistanceFromTargetPlane(PVector pointIn)
 float distanceFromPointToPlane(PVector normalIn, PVector planePoint, PVector questionPoint) -- in case you want to find the distance from a random point to a random plane defined by a plane point and a point on that plane
 PVector getNormal() -- will return the current PVector normal for the camera
 PVector getTargetNormal() -- will return the target normal if any
-boolean pointInView() –– will say whether or not a point is in view of the screen
+boolean pointInView(PVector pointIn, float newLow, float newHigh) –– new high refers to top of the screen
+boolean pointInView(PVector pointIn) –– will say whether or not a point is in view of the screen
+boolean rectInView(ArrayList<PVector> ptsIn, float newLow, float newHigh) –– when checking with different height values
+boolean rectInView(ArrayList<PVector> ptsIn) –– will say whether or not a rect.. defined by 4 planar PVectors .. is in view.  Order of pts matters
+ArrayList<PVector> makeRect2dCorners(ArrayList<PVector> ptsIn) –– will return the 2d screen points of a 'rect' – 4 PVector points – note: these pts will be adjusted accordingly.  returns null when all points are out of bounds [behind the camera]
+
 
 Controls/Setting
 void setTimeToSeconds() -- will turn tween times to seconds
@@ -87,13 +103,14 @@ public void setTimeMode(int modeIn) –– uses constants from tween library
 int getTimeMode –– returns the current time mode
 void setControlSchemaA –– will set the controls to the default. click:orbit, shift+click:pan, space+click:zoom
 void setControlSchemaB –– will set the controls to. click:pan, shift+click:orbit, space+click:zoom
-void setModeLinear() –– turns tweens to linear
-void setModeCubicBoth() 
-void setModeCubicIn()
-void setModeCubicOut() 
-void setModeQuadBoth()
-void setModeQuarticBoth()
-void setModeQuintIn()
+void setRestrictionPanningZ() –– will make panning ignore the z direction
+void releasePanningRestrictions() –– will go back to regular panning perp. to the normal
+void setEaseLinear() –– turns tweens to linear
+void setEaseInOut() 
+void setEaseIn()
+void setEaseOut()
+void setEase(float[])
+void setEase(float x1, float y1, float x2, float y2)
 public void setMode(int modeIn) –– manually set a mode – used constants from tween library
 void togglePawing() -- will turn on or off mouse controls [on by default]
 void disableOrbit() -- turns off manual orbit
@@ -114,7 +131,10 @@ float getMinDistance() -- returns the minimum distance the camera can be from th
 float getDistance() –– returns the distance between the camera position & target
 void setZoomTweenTime(float time) -- sets the default camera zoom time -- for when using zoomIn() or zoomOut()
 float getZoomTweenTime() -- returns the default camera zoom time
-
+void setFovy(float fovyIn) –– will set the fovy
+float getFovy() –– will return the fovy
+void setHeightScale(float heightScaleIn) –– sets the heightScale
+float getHeightScale() -- returns the heightScale float - default at 1f, used to scale view
 
 
 
