@@ -1,12 +1,13 @@
 CamCam controls and functions
-Last updated 2013_08_08
+Last updated 2013_11_21
 
 Interaction controls
 *right mouse button used by default
 drag -- orbits
 SHIFT + drag -- pans
 SPACE + drag -- zoom in/out
-Wheel -- zoom in/out
+Wheel -- zoom in/out with camera target as the same
+Wheel + SHIFT -- zoom in/out with both cam target and pos moving 
 1 - top view
 2 - front view
 3 - left view

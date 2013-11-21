@@ -103,6 +103,7 @@ public class CamCam {
 	private float panSensitivity = 1f;
 	private float zoomSensitivity = 1f;
 	private float forwardsSensitivity = 1f;
+	private boolean shiftWasPressed = false;
 
 	private final int CONTROL_SCHEMA_A = 0;
 	private final int CONTROL_SCHEMA_B = 1;
@@ -328,7 +329,7 @@ public class CamCam {
 	} // end pauseCamera
 
 	public void pauseCameraMovement() {
-		//System.out.println("in pauseCameraMovement");
+		// System.out.println("in pauseCameraMovement");
 		cameraShift.pause();
 		manualShift.pause();
 		cameraXYRotation.pause();
@@ -386,7 +387,7 @@ public class CamCam {
 			case CONTROL_SCHEMA_A:
 				if ((mouseIsPressed && pressedSpace && !disablePawingZooming)) {
 					pawZoomingActive = true;
-					usePawZooming(pawZoomingActive, false);
+					usePawZooming(pawZoomingActive, false, pressedShift);
 				} else if ((mouseIsPressed && pressedShift && !disablePawingPanning)) {
 					pawPanningActive = true;
 					usePawPanning(pawPanningActive, false);
@@ -398,7 +399,7 @@ public class CamCam {
 			case CONTROL_SCHEMA_B:
 				if ((mouseIsPressed && pressedSpace && !disablePawingZooming)) {
 					pawZoomingActive = true;
-					usePawZooming(pawZoomingActive, false);
+					usePawZooming(pawZoomingActive, false, pressedShift);
 				} else if (mouseIsPressed && pressedShift
 						&& !disablePawingOrbit) {
 					pawRotationActive = true;
@@ -410,9 +411,9 @@ public class CamCam {
 				break;
 			} // end switch
 
-			// if (!mouseIsPressed) {
 			if (distInertia != 0) {
-				usePawZooming(!pawZoomingActive, true);
+				// shift was pressed is defined in the mouse event
+				usePawZooming(!pawZoomingActive, true, shiftWasPressed);
 			}
 			if (shiftInertia.mag() != 0) {
 				usePawPanning(!pawPanningActive, true);
@@ -420,7 +421,6 @@ public class CamCam {
 			if ((zRotationInertia != 0 || xyRotationInertia != 0)) {
 				usePawRotation(!pawRotationActive, true);
 			}
-			// }
 		}
 	} // end dealWithPawing
 
@@ -485,7 +485,8 @@ public class CamCam {
 		cameraShift.setCurrent(oldCameraShift);
 	} // end actOnPawPanning
 
-	private void usePawZooming(boolean active, boolean inertiaMovement) {
+	private void usePawZooming(boolean active, boolean inertiaMovement,
+			boolean shiftCamera) {
 		if (active) {
 			float dy = parent.mouseY - parent.pmouseY;
 			dy *= zoomSensitivity;
@@ -495,15 +496,25 @@ public class CamCam {
 			if (dy == 0 || inertiaMovement)
 				dy = distInertia;
 
-			actOnPawZooming(dy);
+			actOnPawZooming(dy, shiftCamera);
 			distInertia = dy;
 		}
 	} // end usePawZooming
 
-	private void actOnPawZooming(float zoomingIn) {
-		float oldCameraDistance = cameraDist.value();
-		if (oldCameraDistance + zoomingIn > minCamDist) {
-			cameraDist.setCurrent(oldCameraDistance + zoomingIn);
+	// 2013_11_21 changing to make it move the shift
+	private void actOnPawZooming(float zoomingIn, boolean shiftCamera) {
+		if (shiftCamera) { // will shift the camera
+			PVector normal = getNormal();
+			normal.mult(-zoomingIn);
+			PVector oldCameraShift = cameraShift.value();
+			oldCameraShift.add(normal);
+			cameraShift.setCurrent(oldCameraShift);
+		} else { // will only zoom the camera while keeping the same camera
+					// target
+			float oldCameraDistance = cameraDist.value();
+			if (oldCameraDistance + zoomingIn > minCamDist) {
+				cameraDist.setCurrent(oldCameraDistance + zoomingIn);
+			}
 		}
 	} // end actOnPawZooming
 
@@ -1056,6 +1067,28 @@ public class CamCam {
 		}
 	} // end addManualOffset
 
+	/**
+	 * This will simply add the offsetIn value to the manual shift Note: not
+	 * thoroughly tested - might be an issue for winding down the
+	 * cameraShift.value()
+	 * 
+	 * @param offsetIn
+	 *            The PVector offset to be added
+	 */
+	public void addManualOffsetXYZ(PVector offsetIn) {
+		PVector currentManualShiftValue = manualShift.value().get();
+		currentManualShiftValue.add(offsetIn);
+		// add to manual if cameraShift is playing
+		if (cameraShift.isPlaying())
+			manualShift.setCurrent(currentManualShiftValue);
+		else {
+			PVector currentShiftValue = cameraShift.value().get();
+			currentShiftValue.add(offsetIn);
+			cameraShift.setCurrent(currentShiftValue);
+		}
+
+	} // end addManualOffsetXYZ
+
 	public void setDistance(float distIn) {
 		setDistance(distIn, 0);
 	} // end setDistance
@@ -1339,14 +1372,22 @@ public class CamCam {
 				mouseIsPressed = false;
 			} else if (event.getAction() == MouseEvent.WHEEL
 					&& !disablePawingZooming) {
+				// check for shift too to switch between moving camera or simple
+				// zooming
+				shiftWasPressed = (parent.keyPressed && parent.keyCode == parent.SHIFT);
 				int zoomCount = event.getCount();
 				float zoomAmount = -zoomCount * zoomIncrement
 						* cameraDist.value() / (10000);
-				float totalToZoom = zoomAmount;
 				distInertia = -zoomAmount;
-				float targetZoom = cameraDist.value() - totalToZoom;
-				targetZoom = targetZoom < minCamDist ? minCamDist : targetZoom;
-				cameraDist.setCurrent(targetZoom);
+				// only if shift isnt pressed with the distance change
+				if (!shiftWasPressed) {
+					float totalToZoom = zoomAmount;
+					float targetZoom = cameraDist.value() - totalToZoom;
+					targetZoom = targetZoom < minCamDist ? minCamDist
+							: targetZoom;
+					cameraDist.setCurrent(targetZoom);
+				}
+				// otherwise the camera pos and target will both change
 			}
 		}
 	} // end mouseEvent
